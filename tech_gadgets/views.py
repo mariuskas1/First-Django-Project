@@ -1,4 +1,4 @@
-from django.shortcuts import redirect
+from django.shortcuts import redirect, render
 from django.http import HttpResponse, JsonResponse, Http404
 
 from .dummy_data import gadgets
@@ -11,7 +11,9 @@ from django.views.generic.base import RedirectView
 # Create your views here.
 
 def start_page_view(request):
-    return HttpResponse("Das hat funktioniert")
+    return render(request, 'tech_gadgets/test.html', {'gadget_list': gadgets})
+
+
 
 
 class RedirectToGadgetView(RedirectView):
