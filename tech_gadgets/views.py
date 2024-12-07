@@ -1,7 +1,7 @@
 from django.shortcuts import redirect, render
 from django.http import HttpResponse, JsonResponse, Http404
 
-from .dummy_data import gadgets
+from .dummy_data import gadgets, manufacturers
 import json
 from django.utils.text import slugify
 from django.urls import reverse
@@ -35,6 +35,25 @@ def single_gadget_int_view(request, gadget_id):
     return HttpResponse("not found")
 
 
+def single_manufacturer_int_view(request, manufacturer_id):
+    if len(manufacturers) > manufacturer_id:
+        new_slug = slugify(manufacturers[manufacturer_id]["name"])
+        new_url = reverse("manufacturer_slug_url", args=[new_slug])
+        return redirect(new_url)
+    return HttpResponse("not found")
+
+
+class RedirectToManufacturerView(RedirectView):
+    pattern_name = "manufacturer_slug_url"
+    url = ""
+
+    def get_redirect_url(self, *args, **kwargs):
+        slug = slugify(manufacturers[kwargs.get("manufacturer_id", 0)]["name"])
+        new_kwargs = {"manufacturer_slug": slug}
+        return super().get_redirect_url(*args, **new_kwargs)
+
+
+
 class GadgetView(View):
     def get (self, request, gadget_slug):
         gadget_match = None
@@ -50,12 +69,34 @@ class GadgetView(View):
     def post(self, request, gadget_slug):
         try: 
             data = json.loads(request.body)
-            print(f"rescieved data: {data}")
+            print(f"recieved data: {data}")
             return JsonResponse({"response": "did work"})
         except:
             return JsonResponse({"response": "did not work"})
     
 
+
+class ManufacturerView(View):
+    def get(self, request, manufacturer_slug):
+        manufacturer_match = None
+
+        for manufacturer in manufacturers:
+            if slugify(manufacturer["name"])==manufacturer_slug:
+                manufacturer_match = manufacturer
+        
+        if manufacturer_match:
+            return JsonResponse(manufacturer_match)
+        raise Http404
+    
+
+    def post(self, request, manufacturerslug):
+        try: 
+            data = json.loads(request.body)
+            print(f"recieved data: {data}")
+            return JsonResponse({"response": "did work"})
+        except:
+            return JsonResponse({"response": "did not work"})
+    
 
 
 
